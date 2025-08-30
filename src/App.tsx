@@ -1,4 +1,5 @@
 import React from "react";
+import { Box } from "@chakra-ui/react"; // Impor Box
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Pregnancy from "./pages/Pregnancy";
@@ -9,7 +10,7 @@ import BottomNav from "./components/BottomNav";
 
 export default function App() {
   return (
-    <>
+    <Box pb="70px">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/maps" element={<Maps />} />
@@ -18,6 +19,6 @@ export default function App() {
         <Route path="/nutritions" element={<Nutritions />} />
       </Routes>
       <BottomNav />
-    </>
+    </Box>
   );
 }
