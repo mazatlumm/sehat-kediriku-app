@@ -1,13 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Heading,
   Text,
   VStack,
+  Select,
+  FormControl,
+  FormLabel,
 } from "@chakra-ui/react";
 import HomeBackground from "../assets/images/background.png";
 
 export default function Maps() {
+  const [selectedFacility, setSelectedFacility] = useState("all");
+
   const bgColor = "gray.900";
   const headingColor = "cyan.300";
   const subHeadingColor = "gray.400";
@@ -24,6 +29,7 @@ export default function Maps() {
       justifyContent="center"
       color="white"
       p={{ base: 4, md: 8 }}
+      pb="100px" // Padding bawah untuk BottomNav
       overflow="hidden"
       backgroundImage={`url(${HomeBackground})`}
       backgroundSize="cover"
@@ -48,6 +54,34 @@ export default function Maps() {
           </Text>
         </Box>
 
+        {/* Dropdown untuk memilih jenis fasilitas */}
+        <FormControl
+          w="full"
+          maxW="md"
+          textAlign="left"
+        >
+          <FormLabel htmlFor="facility-type" color="whiteAlpha.800" fontWeight="bold">
+            Pilih Tipe Fasilitas
+          </FormLabel>
+          <Select
+            id="facility-type"
+            value={selectedFacility}
+            onChange={(e) => setSelectedFacility(e.target.value)}
+            bg={cardBgColor}
+            color="white"
+            borderColor="rgba(255, 255, 255, 0.18)"
+            _hover={{ borderColor: "rgba(255, 255, 255, 0.3)" }}
+            _focus={{ borderColor: "cyan.300", boxShadow: "0 0 0 1px cyan.300" }}
+            backdropFilter="blur(10px)"
+          >
+            <option value="all">Semua</option>
+            <option value="rumahsakit">Rumah Sakit</option>
+            <option value="klinik">Klinik</option>
+            <option value="puskesmas">Puskesmas</option>
+            <option value="apotek">Apotek</option>
+          </Select>
+        </FormControl>
+
         <Box
           w="full"
           h={{ base: "300px", md: "450px" }}
@@ -62,7 +96,7 @@ export default function Maps() {
           overflow="hidden"
         >
           <Text color="whiteAlpha.800" fontSize="md">
-            Peta Google Maps akan muncul di sini.
+            Anda memilih: **{selectedFacility}**
           </Text>
         </Box>
       </VStack>
