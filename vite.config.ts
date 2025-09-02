@@ -9,7 +9,6 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: [
-        'vite.svg',
         'apple-icon-180.png',
         'apple-splash-*.jpg'
       ],

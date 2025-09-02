@@ -9,9 +9,6 @@ import {
   FormControl,
   FormLabel,
   Spinner,
-  List,
-  ListItem,
-  ListIcon,
   IconButton,
   Flex,
 } from "@chakra-ui/react";

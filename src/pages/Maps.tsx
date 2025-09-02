@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Box,
   Heading,
@@ -8,16 +8,118 @@ import {
   FormControl,
   FormLabel,
 } from "@chakra-ui/react";
+import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
 import HomeBackground from "../assets/images/background.png";
+import { useMap } from "../hooks/useMap";
+
+// Tipe data diperbarui dengan alamat dan telepon
+type Facility = {
+  id: number;
+  name: string;
+  type: "rumahsakit" | "klinik" | "puskesmas" | "apotek";
+  position: { lat: number; lng: number };
+  address: string;
+  phone: string;
+};
+
+// Data fasilitas yang lebih banyak dan realistis di sekitar Kediri
+const facilities: Facility[] = [
+  { id: 1, name: "RSUD Gambiran", type: "rumahsakit", position: { lat: -7.8325, lng: 112.0184 }, address: "Jl. Kapten Tendean No.16, Kota Kediri", phone: "(0354) 682339" },
+  { id: 2, name: "RS Bhayangkara Kediri", type: "rumahsakit", position: { lat: -7.8181, lng: 112.0156 }, address: "Jl. Kombes Pol. Duryat No.17, Kota Kediri", phone: "(0354) 681995" },
+  { id: 3, name: "Klinik Pratama Ar-Rasyid", type: "klinik", position: { lat: -7.8252, lng: 112.0221 }, address: "Jl. Veteran No.25, Kota Kediri", phone: "(0354) 698888" },
+  { id: 4, name: "Puskesmas Balowerti", type: "puskesmas", position: { lat: -7.8198, lng: 112.0123 }, address: "Jl. Balowerti II No.45, Kota Kediri", phone: "(0354) 689118" },
+  { id: 5, name: "Apotek K24 - Brawijaya", type: "apotek", position: { lat: -7.8205, lng: 112.0195 }, address: "Jl. Brawijaya No.40, Kota Kediri", phone: "0823-3567-8901" },
+  { id: 6, name: "RS Baptis Kediri", type: "rumahsakit", position: { lat: -7.8421, lng: 112.0258 }, address: "Jl. Brigjend Pol. IBH Pranoto, Kota Kediri", phone: "(0354) 682170" },
+  { id: 7, name: "Klinik Utama NMW", type: "klinik", position: { lat: -7.8155, lng: 112.0253 }, address: "Jl. Hayam Wuruk No.50, Kota Kediri", phone: "(0354) 681122" },
+  { id: 8, name: "Puskesmas Pesantren 1", type: "puskesmas", position: { lat: -7.8377, lng: 112.0451 }, address: "Jl. Letjend Suprapto No.58, Kota Kediri", phone: "(0354) 689038" },
+  { id: 9, name: "Apotek Kimia Farma", type: "apotek", position: { lat: -7.8236, lng: 112.0142 }, address: "Jl. Dhoho No.120, Kota Kediri", phone: "(0354) 682133" },
+  { id: 10, name: "RSIA Citra Keluarga", type: "rumahsakit", position: { lat: -7.8091, lng: 112.0165 }, address: "Jl. KH. Agus Salim No.110, Kota Kediri", phone: "(0354) 7415599" },
+];
+
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export default function Maps() {
+  // const fasilitas = useMap(GOOGLE_MAPS_API_KEY)
   const [selectedFacility, setSelectedFacility] = useState("all");
+  const { isLoaded } = useJsApiLoader({ googleMapsApiKey: GOOGLE_MAPS_API_KEY, libraries: ['marker'] });
+
+  const mapRef = useRef<google.maps.Map | null>(null);
+  const markersRef = useRef<{ [key: number]: google.maps.marker.AdvancedMarkerElement }>({});
+  const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
+
+  const filteredFacilities =
+    selectedFacility === "all"
+      ? facilities
+      : facilities.filter((f) => f.type === selectedFacility);
+
+  const onLoad = useCallback((map: google.maps.Map) => {
+    mapRef.current = map;
+    
+    // Inisialisasi InfoWindow saat peta dimuat
+    if (!infoWindowRef.current) {
+        infoWindowRef.current = new google.maps.InfoWindow();
+    }
+    
+    // Menutup InfoWindow jika peta diklik
+    map.addListener('click', () => {
+        if (infoWindowRef.current) {
+            infoWindowRef.current.close();
+        }
+    });
+  }, []);
+
+  const onUnmount = useCallback(() => {
+    mapRef.current = null;
+    markersRef.current = {};
+    infoWindowRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    if (!mapRef.current || !isLoaded) return;
+
+    const addMarkers = async () => {
+      // Hapus marker lama dari peta
+      Object.values(markersRef.current).forEach((marker) => {
+        marker.map = null;
+      });
+      markersRef.current = {};
+
+      // Tambah marker baru
+      for (const facility of filteredFacilities) {
+        const marker = new google.maps.marker.AdvancedMarkerElement({
+          map: mapRef.current!,
+          position: facility.position,
+          title: facility.name,
+        });
+
+        // Menambahkan listener untuk event klik pada setiap marker
+        marker.addListener('click', () => {
+          if (infoWindowRef.current) {
+            // Konten untuk InfoWindow dalam format HTML
+            const contentString = `
+              <div style="color: black; max-width: 250px; font-family: Arial, sans-serif;">
+                <h3 style="margin: 0 0 5px 0; font-size: 16px; font-weight: bold;">${facility.name}</h3>
+                <p style="margin: 0 0 5px 0; font-size: 14px;">${facility.address}</p>
+                <p style="margin: 0; font-size: 14px;"><strong>Telp:</strong> ${facility.phone}</p>
+              </div>
+            `;
+            infoWindowRef.current.setContent(contentString);
+            infoWindowRef.current.open(mapRef.current!, marker);
+          }
+        });
+        
+        markersRef.current[facility.id] = marker;
+      }
+    };
+
+    addMarkers();
+  }, [filteredFacilities, isLoaded]);
 
   const bgColor = "gray.900";
   const subHeadingColor = "gray.400";
   const cardBgColor = "rgba(45, 55, 72, 0.4)";
   const cardShadow = "0 8px 32px 0 rgba(0, 0, 0, 0.37)";
-  
+
   return (
     <Box
       minH="93vh"
@@ -49,17 +151,16 @@ export default function Maps() {
             Lokasi Kesehatan
           </Heading>
           <Text fontSize={{ base: "lg", md: "xl" }} color={subHeadingColor}>
-            Temukan Puskesmas, Klinik, dan Rumah Sakit terdekat.
+            Temukan Puskesmas, Klinik, Rumah Sakit, dan Apotek terdekat.
           </Text>
         </Box>
 
-        {/* Dropdown untuk memilih jenis fasilitas */}
-        <FormControl
-          w="full"
-          maxW="md"
-          textAlign="left"
-        >
-          <FormLabel htmlFor="facility-type" color="whiteAlpha.800" fontWeight="bold">
+        <FormControl w="full" maxW="md" textAlign="left">
+          <FormLabel
+            htmlFor="facility-type"
+            color="whiteAlpha.800"
+            fontWeight="bold"
+          >
             Pilih Tipe Fasilitas
           </FormLabel>
           <Select
@@ -73,11 +174,11 @@ export default function Maps() {
             _focus={{ borderColor: "cyan.300", boxShadow: "0 0 0 1px cyan.300" }}
             backdropFilter="blur(10px)"
           >
-            <option value="all">Semua</option>
-            <option value="rumahsakit">Rumah Sakit</option>
-            <option value="klinik">Klinik</option>
-            <option value="puskesmas">Puskesmas</option>
-            <option value="apotek">Apotek</option>
+            <option style={{ color: "black" }} value="all">Semua</option>
+            <option style={{ color: "black" }} value="rumahsakit">Rumah Sakit</option>
+            <option style={{ color: "black" }} value="klinik">Klinik</option>
+            <option style={{ color: "black" }} value="puskesmas">Puskesmas</option>
+            <option style={{ color: "black" }} value="apotek">Apotek</option>
           </Select>
         </FormControl>
 
@@ -89,14 +190,22 @@ export default function Maps() {
           boxShadow={cardShadow}
           backdropFilter="blur(10px)"
           border="1px solid rgba(255, 255, 255, 0.18)"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
           overflow="hidden"
         >
-          <Text color="whiteAlpha.800" fontSize="md">
-            Anda memilih: **{selectedFacility}**
-          </Text>
+          {isLoaded ? (
+            <GoogleMap
+              mapContainerStyle={{ width: "100%", height: "100%" }}
+              center={{ lat: -7.825, lng: 112.020 }} // Center a bit better for new data
+              zoom={14}
+              onLoad={onLoad}
+              onUnmount={onUnmount}
+              options={{ disableDefaultUI: false, mapId: '236c572ebfe9c0d1' }} // Pastikan Map ID Anda valid
+            />
+          ) : (
+            <Text color="whiteAlpha.800" fontSize="md" textAlign="center" mt={6}>
+              Memuat peta...
+            </Text>
+          )}
         </Box>
       </VStack>
     </Box>
