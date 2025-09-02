@@ -14,7 +14,6 @@ export default function Maps() {
   const [selectedFacility, setSelectedFacility] = useState("all");
 
   const bgColor = "gray.900";
-  const headingColor = "cyan.300";
   const subHeadingColor = "gray.400";
   const cardBgColor = "rgba(45, 55, 72, 0.4)";
   const cardShadow = "0 8px 32px 0 rgba(0, 0, 0, 0.37)";
@@ -29,7 +28,7 @@ export default function Maps() {
       justifyContent="center"
       color="white"
       p={{ base: 4, md: 8 }}
-      pb="100px" // Padding bawah untuk BottomNav
+      pb="100px"
       overflow="hidden"
       backgroundImage={`url(${HomeBackground})`}
       backgroundSize="cover"

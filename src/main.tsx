@@ -5,10 +5,23 @@ import { mode } from "@chakra-ui/theme-tools";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 
+import { registerSW } from "virtual:pwa-register";
+
+const updateSW = registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    console.log("🔄 Ada update baru! Refresh untuk mendapatkan versi terbaru.");
+  },
+  onOfflineReady() {
+    console.log("✅ Aplikasi siap digunakan offline.");
+  },
+});
+
+// Chakra UI Theme
 const theme = extendTheme({
   styles: {
-    global: (props) => ({
-      "html, body": { // Perbaikan: Menargetkan elemen html dan body
+    global: (props: any) => ({
+      "html, body": {
         bg: mode("white", "gray.900")(props),
         color: mode("gray.800", "whiteAlpha.900")(props),
       },
@@ -20,6 +33,7 @@ const theme = extendTheme({
   },
 });
 
+// Render App
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
