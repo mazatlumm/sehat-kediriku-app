@@ -7,6 +7,8 @@ import Baby from "./pages/Baby";
 import Nutritions from "./pages/Nutritions";
 import Maps from "./pages/Maps";
 import BottomNav from "./components/BottomNav";
+import BabyAndPregnancy from "./pages/BabyAndPregnancy";
+import Parents from "./pages/Parents";
 
 export default function App() {
   return (
@@ -16,7 +18,9 @@ export default function App() {
         <Route path="/maps" element={<Maps />} />
         <Route path="/pregnancy" element={<Pregnancy />} />
         <Route path="/baby" element={<Baby />} />
+        <Route path="/baby-and-pregnancy" element={<BabyAndPregnancy />} />
         <Route path="/nutritions" element={<Nutritions />} />
+        <Route path="/parents" element={<Parents />} />
       </Routes>
       <BottomNav />
     </Box>

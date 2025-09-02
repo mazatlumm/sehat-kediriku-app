@@ -140,7 +140,7 @@ export default function Baby() {
 
   return (
     <Box
-      minH="100vh"
+      minH="93vh"
       w="full"
       bg={bgColor}
       display="flex"

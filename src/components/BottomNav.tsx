@@ -1,15 +1,15 @@
 import React from "react";
 import { Box, Flex, IconButton, Text } from "@chakra-ui/react";
 import { NavLink, useLocation } from "react-router-dom";
-import { FaHome, FaMapMarkerAlt, FaBaby, FaUtensils, FaFemale } from "react-icons/fa";
+import { FaHome, FaMapMarkerAlt, FaBaby, FaUtensils, FaFemale, FaPeopleArrows } from "react-icons/fa";
 import { keyframes } from "@emotion/react";
 
 const navItems = [
-  { label: "Home", icon: FaHome, path: "/" },
-  { label: "Maps", icon: FaMapMarkerAlt, path: "/maps" },
-  { label: "Pregnancy", icon: FaFemale, path: "/pregnancy" },
-  { label: "Baby", icon: FaBaby, path: "/baby" },
-  { label: "Nutrition", icon: FaUtensils, path: "/nutritions" },
+  { label: "Beranda", icon: FaHome, path: "/" },
+  { label: "Peta Sehat", icon: FaMapMarkerAlt, path: "/maps" },
+  { label: "Bumil & Balita", icon: FaFemale, path: "/baby-and-pregnancy" },
+  { label: "Lansia", icon: FaPeopleArrows, path: "/parents" },
+  { label: "Gizi", icon: FaUtensils, path: "/nutritions" },
 ];
 
 const floating = keyframes`

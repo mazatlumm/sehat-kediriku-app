@@ -13,7 +13,7 @@ import { keyframes } from "@emotion/react";
 import { Link } from "react-router-dom";
 import HospitalIcon from "../assets/images/hospital.png";
 import HamilIcon from "../assets/images/pregnancy.png";
-import BalitaIcon from "../assets/images/baby.png";
+import ParentsIcon from "../assets/images/parents.png";
 import GiziIcon from "../assets/images/nutrition.png";
 import HomeBackground from "../assets/images/background.png";
 
@@ -39,18 +39,18 @@ export default function Home() {
       endColor: "purple.500",
     },
     {
-      label: "Ibu Hamil",
-      path: "/pregnancy",
+      label: "Ibu Hamil & Balita",
+      path: "/baby-and-pregnancy",
       icon: HamilIcon,
       startColor: "pink.500",
       endColor: "red.500",
     },
     {
-      label: "Balita",
-      path: "/baby",
-      icon: BalitaIcon,
-      startColor: "green.500",
-      endColor: "teal.500",
+      label: "Lansia",
+      path: "/parents",
+      icon: ParentsIcon,
+      startColor: "pink.500",
+      endColor: "red.500",
     },
     {
       label: "Ilmu Gizi",
@@ -63,7 +63,7 @@ export default function Home() {
 
   return (
     <Box
-      minH="100vh"
+      minH="93vh"
       w="full"
       bg={bgColor}
       display="flex"

@@ -9,9 +9,6 @@ import {
   FormControl,
   FormLabel,
   Spinner,
-  List,
-  ListItem,
-  ListIcon,
   IconButton,
   Flex,
 } from "@chakra-ui/react";
@@ -46,8 +43,8 @@ const customComponents = {
   ),
 };
 
-export default function Pregnancy() {
-  const [pregnancyWeek, setPregnancyWeek] = useState("");
+export default function Parent() {
+  const [parentAge, setParentAge] = useState("");
   const [advice, setAdvice] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -55,8 +52,8 @@ export default function Pregnancy() {
   const [isPaused, setIsPaused] = useState(false);
 
   const handleFetchAdvice = async () => {
-    if (!pregnancyWeek || isNaN(parseInt(pregnancyWeek))) {
-      setError("Masukkan usia kehamilan yang valid.");
+    if (!parentAge || isNaN(parseInt(parentAge))) {
+      setError("Masukkan usia orang tua yang valid.");
       return;
     }
 
@@ -65,7 +62,7 @@ export default function Pregnancy() {
     setAdvice("");
 
     try {
-      const prompt = `Berikan saran kesehatan yang rinci dan terstruktur untuk ibu hamil pada minggu ke-${pregnancyWeek}. Gunakan format markdown dengan poin-poin penting seperti: \n\n### Pola Makan \n- Konsumsi makanan seimbang... \n\n### Olahraga yang Aman \n- Lakukan jalan santai... \n\n### Tanda yang Harus Diwaspadai \n- Hubungi dokter jika...`;
+      const prompt = `Berikan saran kesehatan yang rinci dan terstruktur untuk orang tua berusia ${parentAge} tahun. Sertakan poin-poin penting tentang: 1. Pola makan dan MPASI yang direkomendasikan, 2. Tahap perkembangan motorik, 3. Tanda-tanda kesehatan yang baik, dan 4. Tanda bahaya yang harus diwaspadai. Gunakan format markdown dengan bahasa yang mudah dimengerti.`;
 
       const username = import.meta.env.VITE_BASIC_AUTH_USERNAME;
       const password = import.meta.env.VITE_BASIC_AUTH_PASSWORD;
@@ -110,7 +107,7 @@ export default function Pregnancy() {
         speech.resume();
         setIsPaused(false);
     } else {
-        speech.cancel(); // Pastikan tidak ada suara yang diputar
+        speech.cancel();
         const utterance = new SpeechSynthesisUtterance(advice.replace(/###/g, ' '));
         utterance.lang = 'id-ID';
         speech.speak(utterance);
@@ -166,10 +163,10 @@ export default function Pregnancy() {
             bgClip="text"
             bgGradient="linear(to-r, #4685E8, #69D2A3)"
           >
-            Info Ibu Hamil
+            Info Lansia
           </Heading>
           <Text fontSize={{ base: "lg", md: "xl" }} color={subHeadingColor}>
-            Dapatkan saran kesehatan khusus untuk usia kehamilan Anda.
+            Dapatkan saran kesehatan khusus untuk usia orang tua Anda.
           </Text>
         </Box>
 
@@ -184,24 +181,24 @@ export default function Pregnancy() {
           border="1px solid rgba(255, 255, 255, 0.18)"
           p={6}
         >
-          <FormLabel htmlFor="pregnancy-week" color="whiteAlpha.800" fontWeight="bold">
-            Usia Kehamilan (dalam minggu)
+          <FormLabel htmlFor="parent-age" color="whiteAlpha.800" fontWeight="bold">
+            Usia Lansia (dalam tahun)
           </FormLabel>
           <Input
-            id="pregnancy-week"
+            id="parent-age"
             type="number"
-            value={pregnancyWeek}
-            onChange={(e) => setPregnancyWeek(e.target.value)}
+            value={parentAge}
+            onChange={(e) => setParentAge(e.target.value)}
             bg="rgba(255, 255, 255, 0.1)"
             borderColor="transparent"
             color="white"
             _hover={{ borderColor: "rgba(255, 255, 255, 0.3)" }}
-            _focus={{ borderColor: "cyan.300", boxShadow: "0 0 0 1px cyan.300" }}
+            _focus={{ borderColor: "green.300", boxShadow: "0 0 0 1px green.300" }}
           />
           <Button
             mt={4}
             w="full"
-            colorScheme="cyan"
+            colorScheme="green"
             isLoading={isLoading}
             onClick={handleFetchAdvice}
           >
@@ -211,7 +208,7 @@ export default function Pregnancy() {
         </FormControl>
 
         {isLoading && (
-            <Spinner size="lg" color="cyan.300" mt={4} />
+            <Spinner size="lg" color="green.300" mt={4} />
         )}
         
         {advice && (
@@ -235,7 +232,7 @@ export default function Pregnancy() {
                   icon={isSpeaking && !isPaused ? <FaPause /> : <FaPlay />}
                   size="sm"
                   onClick={handleSpeak}
-                  colorScheme={isSpeaking ? "orange" : "cyan"}
+                  colorScheme={isSpeaking ? "orange" : "green"}
                   animation={!isSpeaking && advice ? `${bounce} 1s infinite` : "none"}
                 />
                 <IconButton 
