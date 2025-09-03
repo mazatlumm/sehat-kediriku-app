@@ -37,7 +37,7 @@ const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export default function Maps() {
   const [selectedFacility, setSelectedFacility] = useState("all");
-  const { isLoaded } = useJsApiLoader({ googleMapsApiKey: GOOGLE_MAPS_API_KEY, libraries: ['marker'] });
+  const { isLoaded } = useJsApiLoader({ googleMapsApiKey: GOOGLE_MAPS_API_KEY, libraries: ["marker"] });
 
   const mapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<{ [key: number]: google.maps.marker.AdvancedMarkerElement }>({});
@@ -48,78 +48,77 @@ export default function Maps() {
       ? facilities
       : facilities.filter((f) => f.type === selectedFacility);
 
-  // Menggabungkan logika onLoad dan useEffect dalam satu fungsi useCallback yang lebih efisien
+  // Inisialisasi map
   const onLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
-    
-    // Inisialisasi InfoWindow saat peta dimuat
     if (!infoWindowRef.current) {
-        infoWindowRef.current = new google.maps.InfoWindow();
+      infoWindowRef.current = new google.maps.InfoWindow();
     }
-    
-    // Menutup InfoWindow jika peta diklik
-    map.addListener('click', () => {
-        if (infoWindowRef.current) {
-            infoWindowRef.current.close();
-        }
+    map.addListener("click", () => {
+      infoWindowRef.current?.close();
     });
+  }, []);
 
-    const addMarkers = async () => {
-      // Hapus marker lama dari peta
-      Object.values(markersRef.current).forEach((marker) => {
-        marker.map = null;
-      });
-      markersRef.current = {};
-
-      // Tambah marker baru
-      for (const facility of filteredFacilities) {
-        const marker = new google.maps.marker.AdvancedMarkerElement({
-          map: mapRef.current,
-          position: facility.position,
-          title: facility.name,
-        });
-
-        marker.addListener('click', () => {
-          if (infoWindowRef.current) {
-            const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=$${encodeURIComponent(facility.address)}&travelmode=driving`;
-            const contentString = `
-              <div style="color: black; max-width: 250px; font-family: Arial, sans-serif;">
-                <h3 style="margin: 0 0 5px 0; font-size: 16px; font-weight: bold;">${facility.name}</h3>
-                <p style="margin: 0 0 5px 0; font-size: 14px;">${facility.address}</p>
-                <p style="margin: 0 0 10px 0; font-size: 14px;"><strong>Telp:</strong> ${facility.phone}</p>
-                <a href="${directionsUrl}" target="_blank" rel="noopener noreferrer">
-                    <button style="
-                        background-color: #4685E8;
-                        color: white;
-                        border: none;
-                        padding: 8px 12px;
-                        border-radius: 4px;
-                        cursor: pointer;
-                        font-size: 14px;
-                        width: 100%;
-                    ">
-                        Lihat Rute
-                    </button>
-                </a>
-              </div>
-            `;
-            infoWindowRef.current.setContent(contentString);
-            infoWindowRef.current.open(mapRef.current!, marker);
-          }
-        });
-        
-        markersRef.current[facility.id] = marker;
-      }
-    };
-    addMarkers();
-
-  }, [filteredFacilities]);
-
+  // Hapus marker saat unmount
   const onUnmount = useCallback(() => {
     mapRef.current = null;
     markersRef.current = {};
     infoWindowRef.current = null;
   }, []);
+
+  // Update marker setiap kali filter berubah
+  useEffect(() => {
+    if (!mapRef.current || !isLoaded) return;
+
+    // Hapus marker lama
+    Object.values(markersRef.current).forEach((marker) => {
+      marker.map = null;
+    });
+    markersRef.current = {};
+
+    // Tambah marker baru
+    for (const facility of filteredFacilities) {
+      const marker = new google.maps.marker.AdvancedMarkerElement({
+        map: mapRef.current,
+        position: facility.position,
+        title: facility.name,
+      });
+
+      marker.addListener("click", () => {
+        if (infoWindowRef.current) {
+          const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+            facility.address
+          )}&travelmode=driving`;
+
+          const contentString = `
+            <div style="color: black; max-width: 250px; font-family: Arial, sans-serif;">
+              <h3 style="margin: 0 0 5px 0; font-size: 16px; font-weight: bold;">${facility.name}</h3>
+              <p style="margin: 0 0 5px 0; font-size: 14px;">${facility.address}</p>
+              <p style="margin: 0 0 10px 0; font-size: 14px;"><strong>Telp:</strong> ${facility.phone}</p>
+              <a href="${directionsUrl}" target="_blank" rel="noopener noreferrer">
+                <button style="
+                    background-color: #4685E8;
+                    color: white;
+                    border: none;
+                    padding: 8px 12px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    width: 100%;
+                ">
+                  Lihat Rute
+                </button>
+              </a>
+            </div>
+          `;
+          infoWindowRef.current.setContent(contentString);
+          infoWindowRef.current.open(mapRef.current!, marker);
+        }
+      });
+
+      markersRef.current[facility.id] = marker;
+    }
+  }, [filteredFacilities, isLoaded]);
 
   const bgColor = "gray.900";
   const subHeadingColor = "gray.400";
@@ -205,7 +204,7 @@ export default function Maps() {
               zoom={14}
               onLoad={onLoad}
               onUnmount={onUnmount}
-              options={{ disableDefaultUI: false, mapId: '236c572ebfe9c0d1' }}
+              options={{ disableDefaultUI: false, mapId: "236c572ebfe9c0d1" }}
             />
           ) : (
             <Text color="whiteAlpha.800" fontSize="md" textAlign="center" mt={6}>
