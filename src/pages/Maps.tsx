@@ -10,9 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
 import HomeBackground from "../assets/images/background.png";
-import { useMap } from "../hooks/useMap";
 
-// Tipe data diperbarui dengan alamat dan telepon
 type Facility = {
   id: number;
   name: string;
@@ -22,7 +20,6 @@ type Facility = {
   phone: string;
 };
 
-// Data fasilitas yang lebih banyak dan realistis di sekitar Kediri
 const facilities: Facility[] = [
   { id: 1, name: "RSUD Gambiran", type: "rumahsakit", position: { lat: -7.8325, lng: 112.0184 }, address: "Jl. Kapten Tendean No.16, Kota Kediri", phone: "(0354) 682339" },
   { id: 2, name: "RS Bhayangkara Kediri", type: "rumahsakit", position: { lat: -7.8181, lng: 112.0156 }, address: "Jl. Kombes Pol. Duryat No.17, Kota Kediri", phone: "(0354) 681995" },
@@ -39,7 +36,6 @@ const facilities: Facility[] = [
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export default function Maps() {
-  // const fasilitas = useMap(GOOGLE_MAPS_API_KEY)
   const [selectedFacility, setSelectedFacility] = useState("all");
   const { isLoaded } = useJsApiLoader({ googleMapsApiKey: GOOGLE_MAPS_API_KEY, libraries: ['marker'] });
 
@@ -52,6 +48,7 @@ export default function Maps() {
       ? facilities
       : facilities.filter((f) => f.type === selectedFacility);
 
+  // Menggabungkan logika onLoad dan useEffect dalam satu fungsi useCallback yang lebih efisien
   const onLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
     
@@ -66,16 +63,6 @@ export default function Maps() {
             infoWindowRef.current.close();
         }
     });
-  }, []);
-
-  const onUnmount = useCallback(() => {
-    mapRef.current = null;
-    markersRef.current = {};
-    infoWindowRef.current = null;
-  }, []);
-
-  useEffect(() => {
-    if (!mapRef.current || !isLoaded) return;
 
     const addMarkers = async () => {
       // Hapus marker lama dari peta
@@ -87,20 +74,33 @@ export default function Maps() {
       // Tambah marker baru
       for (const facility of filteredFacilities) {
         const marker = new google.maps.marker.AdvancedMarkerElement({
-          map: mapRef.current!,
+          map: mapRef.current,
           position: facility.position,
           title: facility.name,
         });
 
-        // Menambahkan listener untuk event klik pada setiap marker
         marker.addListener('click', () => {
           if (infoWindowRef.current) {
-            // Konten untuk InfoWindow dalam format HTML
+            const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=$${encodeURIComponent(facility.address)}&travelmode=driving`;
             const contentString = `
               <div style="color: black; max-width: 250px; font-family: Arial, sans-serif;">
                 <h3 style="margin: 0 0 5px 0; font-size: 16px; font-weight: bold;">${facility.name}</h3>
                 <p style="margin: 0 0 5px 0; font-size: 14px;">${facility.address}</p>
-                <p style="margin: 0; font-size: 14px;"><strong>Telp:</strong> ${facility.phone}</p>
+                <p style="margin: 0 0 10px 0; font-size: 14px;"><strong>Telp:</strong> ${facility.phone}</p>
+                <a href="${directionsUrl}" target="_blank" rel="noopener noreferrer">
+                    <button style="
+                        background-color: #4685E8;
+                        color: white;
+                        border: none;
+                        padding: 8px 12px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        width: 100%;
+                    ">
+                        Lihat Rute
+                    </button>
+                </a>
               </div>
             `;
             infoWindowRef.current.setContent(contentString);
@@ -111,9 +111,15 @@ export default function Maps() {
         markersRef.current[facility.id] = marker;
       }
     };
-
     addMarkers();
-  }, [filteredFacilities, isLoaded]);
+
+  }, [filteredFacilities]);
+
+  const onUnmount = useCallback(() => {
+    mapRef.current = null;
+    markersRef.current = {};
+    infoWindowRef.current = null;
+  }, []);
 
   const bgColor = "gray.900";
   const subHeadingColor = "gray.400";
@@ -195,11 +201,11 @@ export default function Maps() {
           {isLoaded ? (
             <GoogleMap
               mapContainerStyle={{ width: "100%", height: "100%" }}
-              center={{ lat: -7.825, lng: 112.020 }} // Center a bit better for new data
+              center={{ lat: -7.825, lng: 112.020 }}
               zoom={14}
               onLoad={onLoad}
               onUnmount={onUnmount}
-              options={{ disableDefaultUI: false, mapId: '236c572ebfe9c0d1' }} // Pastikan Map ID Anda valid
+              options={{ disableDefaultUI: false, mapId: '236c572ebfe9c0d1' }}
             />
           ) : (
             <Text color="whiteAlpha.800" fontSize="md" textAlign="center" mt={6}>
