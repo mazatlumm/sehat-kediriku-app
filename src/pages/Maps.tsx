@@ -36,7 +36,7 @@ const facilities: Facility[] = [
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export default function Maps() {
-  const [selectedFacility, setSelectedFacility] = useState("all");
+  const [selectedFacility, setSelectedFacility] = useState("");
   const { isLoaded } = useJsApiLoader({ googleMapsApiKey: GOOGLE_MAPS_API_KEY, libraries: ["marker"] });
 
   const mapRef = useRef<google.maps.Map | null>(null);
