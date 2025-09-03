@@ -179,6 +179,7 @@ export default function Maps() {
             _focus={{ borderColor: "cyan.300", boxShadow: "0 0 0 1px cyan.300" }}
             backdropFilter="blur(10px)"
           >
+            <option style={{ color: "black" }} value="">- Pilih FasKes -</option>
             <option style={{ color: "black" }} value="all">Semua</option>
             <option style={{ color: "black" }} value="rumahsakit">Rumah Sakit</option>
             <option style={{ color: "black" }} value="klinik">Klinik</option>
