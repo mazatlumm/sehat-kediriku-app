@@ -9,6 +9,7 @@ import Maps from "./pages/Maps";
 import BottomNav from "./components/BottomNav";
 import BabyAndPregnancy from "./pages/BabyAndPregnancy";
 import Parents from "./pages/Parents";
+import SkinDetector from "./pages/SkinDetector";
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/baby-and-pregnancy" element={<BabyAndPregnancy />} />
         <Route path="/nutritions" element={<Nutritions />} />
         <Route path="/parents" element={<Parents />} />
+        <Route path="/skin-detection" element={<SkinDetector />} />
       </Routes>
       <BottomNav />
     </Box>

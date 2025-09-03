@@ -7,7 +7,6 @@ import {
   VStack,
   Image,
   Button,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { Link } from "react-router-dom";
@@ -15,6 +14,7 @@ import HospitalIcon from "../assets/images/hospital.png";
 import HamilIcon from "../assets/images/pregnancy.png";
 import ParentsIcon from "../assets/images/parents.png";
 import GiziIcon from "../assets/images/nutrition.png";
+import SkinIcon from "../assets/images/skin.png";
 import HomeBackground from "../assets/images/background.png";
 
 const floating = keyframes`
@@ -23,14 +23,23 @@ const floating = keyframes`
   100% { transform: translateY(0px); }
 `;
 
+// Interface untuk mendefinisikan tipe data dari setiap item menu
+interface MenuItem {
+  label: string;
+  path: string;
+  icon: string;
+  startColor: string;
+  endColor: string;
+}
+
 export default function Home() {
   const bgColor = "gray.900";
   const cardBgColor = "rgba(45, 55, 72, 0.4)";
-  const headingColor = "cyan.300";
   const subHeadingColor = "gray.400";
   const cardShadow = "0 8px 32px 0 rgba(0, 0, 0, 0.37)";
 
-  const menuItems = [
+  // Terapkan interface MenuItem pada array menuItems
+  const menuItems: MenuItem[] = [
     {
       label: "Lokasi Kesehatan",
       path: "/maps",
@@ -59,7 +68,17 @@ export default function Home() {
       startColor: "orange.500",
       endColor: "yellow.500",
     },
+    {
+      label: "Deteksi Penyakit Kulit",
+      path: "/skin-detection",
+      icon: SkinIcon,
+      startColor: "teal.500",
+      endColor: "green.500",
+    },
   ];
+
+  const menuItemsTop = menuItems.slice(0, 4);
+  const menuItemBottom = menuItems[4];
 
   return (
     <Box
@@ -77,7 +96,7 @@ export default function Home() {
       backgroundPosition="center"
       backgroundAttachment="fixed"
     >
-      <VStack spacing={{ base: 6, md: 10 }} w="full" maxW="xl" textAlign="center">
+      <VStack spacing={{ base: 6, md: 5 }} w="full" maxW="xl" textAlign="center">
         <Box>
           <Heading
             as="h1"
@@ -86,7 +105,6 @@ export default function Home() {
             fontWeight="extrabold"
             letterSpacing="tight"
             bgClip="text"
-            // Perbaikan: Ubah gradien teks agar lebih cerah dan mencolok
             bgGradient="linear(to-r, #4685E8, #69D2A3)"
           >
             Kediri Sehat
@@ -96,9 +114,8 @@ export default function Home() {
           </Text>
         </Box>
 
-        {/* --- Kartu Layanan Glassmorphism --- */}
         <SimpleGrid columns={{ base: 2, md: 2 }} spacing={4} w="full">
-          {menuItems.map((item) => (
+          {menuItemsTop.map((item) => (
             <Button
               key={item.path}
               as={Link}
@@ -136,6 +153,44 @@ export default function Home() {
             </Button>
           ))}
         </SimpleGrid>
+
+        <Box w="full">
+          <Button
+            as={Link}
+            to={menuItemBottom.path}
+            variant="unstyled"
+            w="full"
+            h={{ base: "140px", md: "180px" }}
+            bg={cardBgColor}
+            borderRadius="2xl"
+            boxShadow={cardShadow}
+            backdropFilter="blur(10px)"
+            border="1px solid rgba(255, 255, 255, 0.18)"
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            transition="all 0.3s ease-in-out"
+            _hover={{
+              transform: "scale(1.02)",
+              boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.5)",
+            }}
+            _active={{
+              transform: "scale(0.98)",
+            }}
+          >
+            <Image
+              src={menuItemBottom.icon}
+              alt={menuItemBottom.label}
+              boxSize={{ base: "50px", md: "12" }}
+              mb={3}
+              animation={`${floating} 3s ease-in-out infinite`}
+            />
+            <Text fontWeight="bold" fontSize={{ base: "md", md: "lg" }} color="whiteAlpha.900">
+              {menuItemBottom.label}
+            </Text>
+          </Button>
+        </Box>
       </VStack>
     </Box>
   );
