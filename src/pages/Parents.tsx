@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Heading,
@@ -13,7 +13,7 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { CheckCircleIcon } from "@chakra-ui/icons";
-import { FaPlay, FaPause, FaStop } from "react-icons/fa";
+import { FaPlay, FaPause, FaStop, FaTrash } from "react-icons/fa";
 import { keyframes } from "@emotion/react";
 import ReactMarkdown from 'react-markdown';
 import HomeBackground from "../assets/images/background.png";
@@ -43,6 +43,17 @@ const customComponents = {
   ),
 };
 
+const cleanMarkdownText = (text) => {
+  return text
+    .replace(/###\s/g, ' ')
+    .replace(/##\s/g, ' ')
+    .replace(/#\s/g, ' ')
+    .replace(/\*\*/g, '')
+    .replace(/-\s/g, '')
+    .replace(/\*/g, '')
+    .replace(/\n/g, ' ');
+};
+
 export default function Parent() {
   const [parentAge, setParentAge] = useState("");
   const [advice, setAdvice] = useState("");
@@ -50,6 +61,19 @@ export default function Parent() {
   const [error, setError] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [selectedHistoryId, setSelectedHistoryId] = useState(null);
+
+  useEffect(() => {
+    try {
+      const storedHistory = localStorage.getItem("parentAdviceHistory");
+      if (storedHistory) {
+        setHistory(JSON.parse(storedHistory));
+      }
+    } catch (e) {
+      console.error("Failed to load history from localStorage:", e);
+    }
+  }, []);
 
   const handleFetchAdvice = async () => {
     if (!parentAge || isNaN(parseInt(parentAge))) {
@@ -62,7 +86,7 @@ export default function Parent() {
     setAdvice("");
 
     try {
-      const prompt = `Berikan saran kesehatan yang rinci dan terstruktur untuk orang tua berusia ${parentAge} tahun. Sertakan poin-poin penting tentang: 1. Pola makan dan MPASI yang direkomendasikan, 2. Tahap perkembangan motorik, 3. Tanda-tanda kesehatan yang baik, dan 4. Tanda bahaya yang harus diwaspadai. Gunakan format markdown dengan bahasa yang mudah dimengerti.`;
+      const prompt = `Berikan saran kesehatan yang rinci dan terstruktur untuk orang tua berusia ${parentAge} tahun. Sertakan poin-poin penting tentang: 1. Pola makan dan gaya hidup sehat untuk usia ${parentAge} tahun, 2. Jenis olahraga yang direkomendasikan, 3. Tanda-tanda kesehatan yang baik, dan 4. Tanda bahaya yang harus diwaspadai. Gunakan format markdown dengan bahasa yang mudah dimengerti.`;
 
       const username = import.meta.env.VITE_BASIC_AUTH_USERNAME;
       const password = import.meta.env.VITE_BASIC_AUTH_PASSWORD;
@@ -85,6 +109,15 @@ export default function Parent() {
       
       if (data.status && data.data) {
         setAdvice(data.data);
+        const newAdvice = {
+          id: Date.now(),
+          age: parentAge,
+          date: new Date().toLocaleString(),
+          text: data.data,
+        };
+        const updatedHistory = [newAdvice, ...history];
+        setHistory(updatedHistory);
+        localStorage.setItem("parentAdviceHistory", JSON.stringify(updatedHistory));
       } else {
         throw new Error(data.message || "Gagal mengambil saran.");
       }
@@ -108,7 +141,8 @@ export default function Parent() {
         setIsPaused(false);
     } else {
         speech.cancel();
-        const utterance = new SpeechSynthesisUtterance(advice.replace(/###/g, ' '));
+        const cleanedText = cleanMarkdownText(advice);
+        const utterance = new SpeechSynthesisUtterance(cleanedText);
         utterance.lang = 'id-ID';
         speech.speak(utterance);
         setIsSpeaking(true);
@@ -129,8 +163,23 @@ export default function Parent() {
     }
   };
 
+  const handleLoadHistory = (item) => {
+    setAdvice(item.text);
+    setSelectedHistoryId(item.id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteHistory = (id) => {
+    const updatedHistory = history.filter(item => item.id !== id);
+    setHistory(updatedHistory);
+    localStorage.setItem("parentAdviceHistory", JSON.stringify(updatedHistory));
+    if (selectedHistoryId === id) {
+      setAdvice("");
+      setSelectedHistoryId(null);
+    }
+  };
+
   const bgColor = "gray.900";
-  const headingColor = "cyan.300";
   const subHeadingColor = "gray.400";
   const cardBgColor = "rgba(45, 55, 72, 0.4)";
   const cardShadow = "0 8px 32px 0 rgba(0, 0, 0, 0.37)";
@@ -250,6 +299,65 @@ export default function Parent() {
                     {advice}
                 </ReactMarkdown>
             </Box>
+          </Box>
+        )}
+        
+        {history.length > 0 && (
+          <Box
+            w="full"
+            maxW="xl"
+            bg={cardBgColor}
+            borderRadius="2xl"
+            boxShadow={cardShadow}
+            backdropFilter="blur(10px)"
+            border="1px solid rgba(255, 255, 255, 0.18)"
+            p={6}
+            textAlign="left"
+            mt={6}
+          >
+            <Heading size="md" color="whiteAlpha.900" mb={4}>
+              Riwayat Saran
+            </Heading>
+            <VStack spacing={4} align="stretch">
+              {history.map((item) => (
+                <Flex
+                  key={item.id}
+                  p={4}
+                  bg="rgba(255, 255, 255, 0.08)"
+                  borderRadius="lg"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  _hover={{ bg: "rgba(255, 255, 255, 0.15)" }}
+                  transition="background-color 0.2s"
+                  border={selectedHistoryId === item.id ? "2px solid #69D2A3" : "none"}
+                >
+                  <Box flex="1">
+                    <Text fontWeight="bold" color="whiteAlpha.900">
+                      Saran untuk usia {item.age} tahun
+                    </Text>
+                    <Text fontSize="sm" color="whiteAlpha.600">
+                      {item.date}
+                    </Text>
+                  </Box>
+                  <Flex gap={2}>
+                    <IconButton
+                      aria-label="Muat saran"
+                      icon={<FaPlay />}
+                      size="sm"
+                      onClick={() => handleLoadHistory(item)}
+                      colorScheme="green"
+                    />
+                    <IconButton
+                      aria-label="Hapus saran"
+                      icon={<FaTrash />}
+                      size="sm"
+                      onClick={() => handleDeleteHistory(item.id)}
+                      colorScheme="red"
+                    />
+                  </Flex>
+                </Flex>
+              ))}
+            </VStack>
           </Box>
         )}
       </VStack>
